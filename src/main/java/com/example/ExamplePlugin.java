@@ -1,5 +1,7 @@
 package com.example;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.inject.Provides;
 
 import javax.annotation.Nullable;
@@ -165,7 +167,21 @@ public class ExamplePlugin extends Plugin
 			availableSpecialTreePatches.add(new Patch("North of Tai Bwo Wannai", new Seed("Calquat", List.of(new Payment(ItemID.POISON_IVY_BERRIES, "Poison ivy berries", 8)))));
 		}
 		if (farmingLevel >= 74) {
-			availableSpecialTreePatches.add(new Patch("Prifddinas", new Seed("Crystal", List.of())));
+			ItemContainer itemContainer = client.getItemContainer(InventoryID.BANK);
+			if (itemContainer != null)
+			{
+				List<Item> bankInventory = Arrays.asList(itemContainer.getItems());
+				boolean canGrowCrystalTree = false;
+				for (int i = 0; i < bankInventory.size(); i++) {
+					final int itemId = bankInventory.get(i).getId();
+					if (itemId == ItemID.CRYSTAL_ACORN || itemId == ItemID.CRYSTAL_SEEDLING || itemId == ItemID.CRYSTAL_SAPLING) {
+						canGrowCrystalTree = true;
+					}
+				}
+				if (canGrowCrystalTree) {
+					availableSpecialTreePatches.add(new Patch("Prifddinas", new Seed("Crystal", List.of())));
+				}
+			}
 		}
 		if (farmingLevel >= 90) {
 			availableSpecialTreePatches.add(new Patch("Farming guild", new Seed("Redwood", List.of(new Payment(ItemID.DRAGONFRUIT, "Dragonfruit", 6)))));
