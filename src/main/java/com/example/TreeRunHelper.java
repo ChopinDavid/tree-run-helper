@@ -21,7 +21,7 @@ import java.util.List;
 @PluginDescriptor(
 	name = "Tree Run Helper"
 )
-public class ExamplePlugin extends Plugin
+public class TreeRunHelper extends Plugin
 {
 	@Inject
 	private Client client;
