@@ -1,7 +1,5 @@
 package com.example;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 import com.google.inject.Provides;
 
 import javax.annotation.Nullable;
@@ -105,7 +103,7 @@ public class ExamplePlugin extends Plugin
 		}
 
 		if (bestTreeSeed != null) {
-			availableTreePatches = new ArrayList(Arrays.asList(new Patch("West of Lumbridge Castle", bestTreeSeed), new Patch("Varrock Castle courtyard", bestTreeSeed), new Patch("Falador Park", bestTreeSeed), new Patch("Taverly", bestTreeSeed), new Patch("Tree Gnome Stronghold", bestTreeSeed)));
+			availableTreePatches = new ArrayList(Arrays.asList(new Patch("West of Lumbridge Castle",12594, Varbits.FARMING_4771, bestTreeSeed), new Patch("Varrock Castle courtyard", 12854, Varbits.FARMING_4771, bestTreeSeed), new Patch("Falador Park", 11828, Varbits.FARMING_4771, bestTreeSeed), new Patch("Taverly",11573, Varbits.FARMING_4771, bestTreeSeed), new Patch("Tree Gnome Stronghold", 9781, Varbits.FARMING_4771, bestTreeSeed)));
 		}
 
 		@Nullable
@@ -129,7 +127,7 @@ public class ExamplePlugin extends Plugin
 		}
 
 		if (bestFruitTreeSeed != null) {
-			availableFruitTreePatches = new ArrayList(Arrays.asList(new Patch("Tree Gnome Stronghold", bestFruitTreeSeed), new Patch("East of Catherby", bestFruitTreeSeed), new Patch("West of Tree Gnome maze", bestFruitTreeSeed), new Patch("North of Brimhaven", bestFruitTreeSeed)));
+			availableFruitTreePatches = new ArrayList(Arrays.asList(new Patch("Tree Gnome Stronghold",9781, Varbits.FARMING_4772, bestFruitTreeSeed), new Patch("East of Catherby",11317, Varbits.FARMING_4771, bestFruitTreeSeed), new Patch("West of Tree Gnome maze", 9777, Varbits.FARMING_4771, bestFruitTreeSeed), new Patch("North of Brimhaven", 11058, Varbits.FARMING_4771, bestFruitTreeSeed)));
 		}
 
 
@@ -137,34 +135,37 @@ public class ExamplePlugin extends Plugin
 		final int hosidiusFavour = client.getVarbitValue(Varbits.KOUREND_FAVOR_HOSIDIUS);
 		if (hosidiusFavour > 60) {
 			if (farmingLevel >= 65) {
-				availableTreePatches.add(new Patch("Farming Guild", bestTreeSeed));
+				availableTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7905, bestTreeSeed));
 			}
 			if (farmingLevel >= 85) {
-				availableFruitTreePatches.add(new Patch("Farming Guild", bestFruitTreeSeed));
-				availableSpiritTreePatches.add(new Patch("Northern section of the Farming Guild", spiritTreeSeed ));
-				availableSpecialTreePatches.add(new Patch("Farming Guild", new Seed("Celastrus", List.of(new Payment(ItemID.POTATO_CACTUS, "Potato cactus", 8)))));
+				availableFruitTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7909, bestFruitTreeSeed));
+				availableSpiritTreePatches.add(new Patch("Northern section of the Farming Guild", 4922, Varbits.FARMING_4771, spiritTreeSeed ));
+				availableSpecialTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7910, new Seed("Celastrus", List.of(new Payment(ItemID.POTATO_CACTUS, "Potato cactus", 8)))));
 			}
 		}
 
 		final QuestState mourningsEndPartIQuestState = Quest.MOURNINGS_END_PART_I.getState(client);
 		if (mourningsEndPartIQuestState == QuestState.FINISHED || mourningsEndPartIQuestState == QuestState.FINISHED) {
-			availableFruitTreePatches.add(new Patch("Lletya", bestFruitTreeSeed));
+			availableFruitTreePatches.add(new Patch("Lletya", 9265, Varbits.FARMING_4771, bestFruitTreeSeed));
 		}
 
 		if (farmingLevel >= 83) {
 			if (Quest.THE_FREMENNIK_TRIALS.getState(client) == QuestState.FINISHED) {
-				availableSpiritTreePatches.add(new Patch("South-east Etceteria", spiritTreeSeed));
+				availableSpiritTreePatches.add(new Patch("South-east Etceteria", 10300, Varbits.FARMING_4772, spiritTreeSeed));
 			}
-			availableSpiritTreePatches.add(new Patch("East of Port Sarim", spiritTreeSeed));
-			availableSpiritTreePatches.add(new Patch("North of Brimhaven", spiritTreeSeed));
-			availableSpiritTreePatches.add(new Patch("South-west of Hosidius", spiritTreeSeed));
+			availableSpiritTreePatches.add(new Patch("East of Port Sarim", 12082, Varbits.FARMING_4771, spiritTreeSeed));
+			availableSpiritTreePatches.add(new Patch("North of Brimhaven", 11058, Varbits.FARMING_4772, spiritTreeSeed));
+			availableSpiritTreePatches.add(new Patch("South-west of Hosidius", 6967, Varbits.FARMING_7904, spiritTreeSeed));
 		}
 
 		if (farmingLevel >= 35) {
-			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest", farmingLevel >= 55 ? new Seed("Mahogany", List.of(new Payment(ItemID.YANILLIAN_HOPS, "Yanillian hops", 25))) : new Seed("Teak", List.of(new Payment(ItemID.LIMPWURT_ROOT, "Limpwurt root", 15)))));
+			final Seed bestFossilIslandSeed = farmingLevel >= 55 ? new Seed("Mahogany", List.of(new Payment(ItemID.YANILLIAN_HOPS, "Yanillian hops", 25))) : new Seed("Teak", List.of(new Payment(ItemID.LIMPWURT_ROOT, "Limpwurt root", 15)));
+			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (west)", 14651, Varbits.FARMING_4773, bestFossilIslandSeed));
+			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (middle)", 14651, Varbits.FARMING_4772, bestFossilIslandSeed));
+			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (east)", 14651, Varbits.FARMING_4771, bestFossilIslandSeed));
 		}
 		if (farmingLevel >= 72) {
-			availableSpecialTreePatches.add(new Patch("North of Tai Bwo Wannai", new Seed("Calquat", List.of(new Payment(ItemID.POISON_IVY_BERRIES, "Poison ivy berries", 8)))));
+			availableSpecialTreePatches.add(new Patch("North of Tai Bwo Wannai", 11056, Varbits.FARMING_4771, new Seed("Calquat", List.of(new Payment(ItemID.POISON_IVY_BERRIES, "Poison ivy berries", 8)))));
 		}
 		if (farmingLevel >= 74) {
 			ItemContainer itemContainer = client.getItemContainer(InventoryID.BANK);
@@ -179,12 +180,12 @@ public class ExamplePlugin extends Plugin
 					}
 				}
 				if (canGrowCrystalTree) {
-					availableSpecialTreePatches.add(new Patch("Prifddinas", new Seed("Crystal", List.of())));
+					availableSpecialTreePatches.add(new Patch("Prifddinas", 13151, Varbits.FARMING_4775, new Seed("Crystal", List.of())));
 				}
 			}
 		}
 		if (farmingLevel >= 90) {
-			availableSpecialTreePatches.add(new Patch("Farming guild", new Seed("Redwood", List.of(new Payment(ItemID.DRAGONFRUIT, "Dragonfruit", 6)))));
+			availableSpecialTreePatches.add(new Patch("Farming guild", 4922, Varbits.FARMING_7907, new Seed("Redwood", List.of(new Payment(ItemID.DRAGONFRUIT, "Dragonfruit", 6)))));
 		}
 	}
 
