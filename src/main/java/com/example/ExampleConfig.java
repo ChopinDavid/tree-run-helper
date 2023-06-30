@@ -7,6 +7,7 @@ import net.runelite.client.config.ConfigItem;
 @ConfigGroup("example")
 public interface ExampleConfig extends Config
 {
+	String CONFIG_GROUP = "treerunhelper";
 	@ConfigItem(
 		keyName = "greeting",
 		name = "Welcome Greeting",

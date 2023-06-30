@@ -7,12 +7,15 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,12 +32,17 @@ public class TreeRunHelper extends Plugin
 	@Inject
 	private ExampleConfig config;
 
+	private ConfigManager configManager;
+
 	Integer farmingLevel;
 	ArrayList<Patch> availableTreePatches = new ArrayList();
 	ArrayList<Patch> availableFruitTreePatches = new ArrayList();
 	ArrayList<Patch> availableSpiritTreePatches = new ArrayList();
-	ArrayList<Patch> availableSpecialTreePatches = new ArrayList();
-
+	ArrayList<Patch> availableHardwoodTreePatches = new ArrayList();
+	ArrayList<Patch> availableCalquatTreePatches = new ArrayList();
+	ArrayList<Patch> availableCrystalTreePatches = new ArrayList();
+	ArrayList<Patch> availableCelastrusTreePatches = new ArrayList();
+	ArrayList<Patch> availableRedwoodTreePatches = new ArrayList();
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -80,11 +88,25 @@ public class TreeRunHelper extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick tick)
 	{
-		if (farmingLevel == null) {
-			farmingLevel = client.getRealSkillLevel(Skill.FARMING);
-			updateAvailablePatches();
+			if (farmingLevel == null) {
+				farmingLevel = client.getRealSkillLevel(Skill.FARMING);
+				updateAvailablePatches();
+			}
+
+		Widget motd = client.getWidget(WidgetInfo.LOGIN_CLICK_TO_PLAY_SCREEN_MESSAGE_OF_THE_DAY);
+		if (motd != null && !motd.isHidden())
+		{
+			return;
 		}
-		System.out.println("asdf");
+			final int currentRegionId = client.getLocalPlayer().getWorldLocation().getRegionID();
+			determineNewPatchValues(PatchType.TREE, availableTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.FRUIT_TREE, availableFruitTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.SPIRIT_TREE, availableSpiritTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.HARDWOOD_TREE, availableHardwoodTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.CALQUAT_TREE, availableCalquatTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.CRYSTAL_TREE, availableCrystalTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.CELASTRUS_TREE, availableCelastrusTreePatches, currentRegionId);
+			determineNewPatchValues(PatchType.REDWOOD_TREE, availableRedwoodTreePatches, currentRegionId);
 	}
 
 	private void updateAvailablePatches() {
@@ -140,7 +162,7 @@ public class TreeRunHelper extends Plugin
 			if (farmingLevel >= 85) {
 				availableFruitTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7909, bestFruitTreeSeed));
 				availableSpiritTreePatches.add(new Patch("Northern section of the Farming Guild", 4922, Varbits.FARMING_4771, spiritTreeSeed ));
-				availableSpecialTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7910, new Seed("Celastrus", List.of(new Payment(ItemID.POTATO_CACTUS, "Potato cactus", 8)))));
+				availableCelastrusTreePatches.add(new Patch("Farming Guild", 4922, Varbits.FARMING_7910, new Seed("Celastrus", List.of(new Payment(ItemID.POTATO_CACTUS, "Potato cactus", 8)))));
 			}
 		}
 
@@ -160,12 +182,12 @@ public class TreeRunHelper extends Plugin
 
 		if (farmingLevel >= 35) {
 			final Seed bestFossilIslandSeed = farmingLevel >= 55 ? new Seed("Mahogany", List.of(new Payment(ItemID.YANILLIAN_HOPS, "Yanillian hops", 25))) : new Seed("Teak", List.of(new Payment(ItemID.LIMPWURT_ROOT, "Limpwurt root", 15)));
-			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (west)", 14651, Varbits.FARMING_4773, bestFossilIslandSeed));
-			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (middle)", 14651, Varbits.FARMING_4772, bestFossilIslandSeed));
-			availableSpecialTreePatches.add(new Patch("Fossil Island Mushroom Forest (east)", 14651, Varbits.FARMING_4771, bestFossilIslandSeed));
+			availableHardwoodTreePatches.add(new Patch("Fossil Island Mushroom Forest (west)", 14651, Varbits.FARMING_4773, bestFossilIslandSeed));
+			availableHardwoodTreePatches.add(new Patch("Fossil Island Mushroom Forest (middle)", 14651, Varbits.FARMING_4772, bestFossilIslandSeed));
+			availableHardwoodTreePatches.add(new Patch("Fossil Island Mushroom Forest (east)", 14651, Varbits.FARMING_4771, bestFossilIslandSeed));
 		}
 		if (farmingLevel >= 72) {
-			availableSpecialTreePatches.add(new Patch("North of Tai Bwo Wannai", 11056, Varbits.FARMING_4771, new Seed("Calquat", List.of(new Payment(ItemID.POISON_IVY_BERRIES, "Poison ivy berries", 8)))));
+			availableCalquatTreePatches.add(new Patch("North of Tai Bwo Wannai", 11056, Varbits.FARMING_4771, new Seed("Calquat", List.of(new Payment(ItemID.POISON_IVY_BERRIES, "Poison ivy berries", 8)))));
 		}
 		if (farmingLevel >= 74) {
 			ItemContainer itemContainer = client.getItemContainer(InventoryID.BANK);
@@ -180,12 +202,164 @@ public class TreeRunHelper extends Plugin
 					}
 				}
 				if (canGrowCrystalTree) {
-					availableSpecialTreePatches.add(new Patch("Prifddinas", 13151, Varbits.FARMING_4775, new Seed("Crystal", List.of())));
+					availableCrystalTreePatches.add(new Patch("Prifddinas", 13151, Varbits.FARMING_4775, new Seed("Crystal", List.of())));
 				}
 			}
 		}
 		if (farmingLevel >= 90) {
-			availableSpecialTreePatches.add(new Patch("Farming guild", 4922, Varbits.FARMING_7907, new Seed("Redwood", List.of(new Payment(ItemID.DRAGONFRUIT, "Dragonfruit", 6)))));
+			availableRedwoodTreePatches.add(new Patch("Farming guild", 4922, Varbits.FARMING_7907, new Seed("Redwood", List.of(new Payment(ItemID.DRAGONFRUIT, "Dragonfruit", 6)))));
+		}
+	}
+
+	private int determineTimeToGrow(PatchType type, int value) {
+		if (type == PatchType.TREE) {
+			if (value == 8)
+			{
+				//Oak growing
+				return 160 * 60;
+			}
+			if (value == 15)
+			{
+				//Willow growing
+				return 240 * 60;
+			}
+			if (value == 24)
+			{
+				//Maple growing
+				return 320 * 60;
+			}
+			if (value == 35)
+			{
+				//Yew growing
+				return 400 * 60;
+			}
+			if (value == 48)
+			{
+				//Magic Tree growing
+				return 480 * 60;
+			}
+		}
+
+		if (type == PatchType.FRUIT_TREE) {
+			if (value == 8)
+			{
+				//Apple Tree growing
+				return 960 * 60;
+			}
+			if (value == 35) {
+				//Banana Tree growing
+				return 960 * 60;
+			}
+			if (value == 72) {
+				//Orange Tree growing
+				return 960 * 60;
+			}
+			if (value == 99) {
+				//Curry Tree growing
+				return 960 * 60;
+			}
+			if (value == 142) {
+				//Pineapple Plant growing
+				return 960 * 60;
+			}
+			if (value == 163) {
+				//Papaya Tree growing
+				return 960 * 60;
+			}
+			if (value == 200) {
+				//Palm Tree growing
+				return 960 * 60;
+			}
+			if (value == 227) {
+				//Dragonfruit Tree growing
+				return 960 * 60;
+			}
+		}
+
+		if (type == PatchType.SPIRIT_TREE) {
+			if (value == 8) {
+				//Spirit Tree growing
+				return 3840 * 60;
+			}
+		}
+
+		if (type == PatchType.HARDWOOD_TREE) {
+			if (value == 8) {
+				//Teak Tree growing
+				return 4480 * 60;
+			}
+			if (value == 30) {
+				//Mahogany Tree growing
+				return 5120 * 60;
+			}
+		}
+
+		if (type == PatchType.CALQUAT_TREE) {
+			if (value == 4) {
+				//Calquat Tree growing
+				return 1280 * 60;
+			}
+		}
+
+		if (type == PatchType.CRYSTAL_TREE) {
+			if (value == 8) {
+				//Crystal Tree growing
+				return 480 * 60;
+			}
+		}
+
+		if (type == PatchType.CELASTRUS_TREE) {
+			if (value == 8) {
+				//Celastrus Tree growing
+				return 800 * 60;
+			}
+		}
+
+		if (type == PatchType.REDWOOD_TREE) {
+			if (value == 8)
+			{
+				//Redwood Tree growing
+				return 6400 * 60;
+			}
+		}
+
+		//Weeds growing, tree harvestble, tree diseased, or tree dead
+		return 0;
+	}
+
+	private void determineNewPatchValues(PatchType type, List<Patch> patches, int currentRegionId) {
+		for (Patch patch: patches) {
+			if (patch.getRegionId() != currentRegionId) {
+				continue;
+			}
+			final long unixNow = Instant.now().getEpochSecond();
+			final int varbitValue = client.getVarbitValue(patch.getVarbit());
+			final String strVarbit = Integer.toString(varbitValue);
+			final String key = patch.configKey();
+			final String storedValue = configManager.getRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key);
+			final int timeToGrow = determineTimeToGrow(type, varbitValue);
+			String value;
+			if (storedValue != null) {
+				String[] parts = storedValue.split(":");
+				final String oldVarbit = parts[0];
+				if (!oldVarbit.equals(strVarbit) && varbitValue > 3 && Integer.parseInt(oldVarbit) == 3) {
+					//We just planted something!
+					value = strVarbit + ":" + (unixNow + timeToGrow);
+				} else if (varbitValue == 3) {
+					//We are ready to plant
+					value = strVarbit + ":" + (unixNow + timeToGrow);
+				} else {
+					continue;
+				}
+			} else {
+				if (varbitValue == 3) {
+					//We are ready to plant
+					value = strVarbit + ":" + (unixNow + timeToGrow);
+				} else {
+					continue;
+				}
+			}
+			configManager.setRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key, value);
 		}
 	}
 
@@ -246,6 +420,19 @@ public class TreeRunHelper extends Plugin
 	@Provides
 	ExampleConfig provideConfig(ConfigManager configManager)
 	{
+		this.configManager = configManager;
 		return configManager.getConfig(ExampleConfig.class);
 	}
 }
+
+enum PatchType {
+	TREE,
+	FRUIT_TREE,
+	SPIRIT_TREE,
+	HARDWOOD_TREE,
+	CALQUAT_TREE,
+	CRYSTAL_TREE,
+	CELASTRUS_TREE,
+	REDWOOD_TREE
+}
+
