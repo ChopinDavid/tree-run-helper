@@ -12,8 +12,12 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.util.ImageUtil;
 
 import java.time.Instant;
 import java.util.*;
@@ -29,6 +33,10 @@ public class TreeRunHelper extends Plugin
 
 	@Inject
 	private TreeRunHelperConfig config;
+
+	@Inject
+	private ClientToolbar clientToolbar;
+	private NavigationButton navButton;
 
 	private ConfigManager configManager;
 
@@ -100,14 +108,32 @@ public class TreeRunHelper extends Plugin
 		return harvestablePatches();
 	}
 
+	@Provides
+	TreeRunHelperConfig provideConfig(ConfigManager configManager)
+	{
+		this.configManager = configManager;
+		return configManager.getConfig(TreeRunHelperConfig.class);
+	}
+
 	@Override
 	protected void startUp() throws Exception
 	{
+
+		TreeRunHelperPanel panel = injector.getInstance(TreeRunHelperPanel.class);
+		navButton = NavigationButton.builder()
+				.tooltip("Tree Run Helper")
+				.icon(ImageUtil.loadImageResource(getClass(), "/panel_icon.png"))
+				.panel(panel)
+				.priority(50)
+				.build();
+
+		clientToolbar.addNavigation(navButton);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
+		clientToolbar.removeNavigation(navButton);
 	}
 
 	@Subscribe
@@ -121,25 +147,6 @@ public class TreeRunHelper extends Plugin
 			case LOGGED_IN:
 				int farmingLvl = client.getRealSkillLevel(Skill.FARMING);
 		}
-	}
-
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
-	{
-	}
-
-	@Subscribe
-	public void onStatChanged(StatChanged statChanged)
-	{
-	}
-
-	@Subscribe
-	public void onItemSpawned(ItemSpawned itemSpawned) {
-	}
-
-	@Subscribe
-	public void onItemDespawned(ItemDespawned itemDespawned)
-	{
 	}
 
 	@Subscribe
@@ -468,67 +475,6 @@ public class TreeRunHelper extends Plugin
 				}
 			}
 		}
-	}
-
-	@Subscribe
-	public void onGameObjectSpawned(GameObjectSpawned event)
-	{
-	}
-
-	@Subscribe
-	public void onGameObjectDespawned(GameObjectDespawned event)
-	{
-	}
-
-	@Subscribe
-	public void onGroundObjectSpawned(GroundObjectSpawned event)
-	{
-	}
-
-	@Subscribe
-	public void onGroundObjectDespawned(GroundObjectDespawned event)
-	{
-	}
-
-	@Subscribe
-	public void onWallObjectSpawned(WallObjectSpawned event)
-	{
-	}
-
-	@Subscribe
-	public void onWallObjectDespawned(WallObjectDespawned event)
-	{
-	}
-
-	@Subscribe
-	public void onDecorativeObjectSpawned(DecorativeObjectSpawned event)
-	{
-	}
-
-	@Subscribe
-	public void onDecorativeObjectDespawned(DecorativeObjectDespawned event)
-	{
-	}
-
-	private void onTileObject(Tile tile, TileObject oldObject, TileObject newObject)
-	{
-	}
-
-	@Subscribe
-	public void onNpcSpawned(NpcSpawned npcSpawned)
-	{
-	}
-
-	@Subscribe
-	public void onNpcDespawned(NpcDespawned npcDespawned)
-	{
-	}
-
-	@Provides
-	TreeRunHelperConfig provideConfig(ConfigManager configManager)
-	{
-		this.configManager = configManager;
-		return configManager.getConfig(TreeRunHelperConfig.class);
 	}
 }
 
