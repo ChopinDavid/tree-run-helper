@@ -28,7 +28,7 @@ public class TreeRunHelper extends Plugin
 	private Client client;
 
 	@Inject
-	private ExampleConfig config;
+	private TreeRunHelperConfig config;
 
 	private ConfigManager configManager;
 
@@ -398,7 +398,7 @@ public class TreeRunHelper extends Plugin
 			final int varbitValue = client.getVarbitValue(patch.getVarbit());
 			final String strVarbit = Integer.toString(varbitValue);
 			final String key = patch.configKey();
-			final String storedValue = configManager.getRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key);
+			final String storedValue = configManager.getRSProfileConfiguration(TreeRunHelperConfig.CONFIG_GROUP, key);
 			final int timeToGrow = determineTimeToGrow(type, varbitValue);
 			String value;
 			if (storedValue != null) {
@@ -423,7 +423,7 @@ public class TreeRunHelper extends Plugin
 					continue;
 				}
 			}
-			configManager.setRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key, value);
+			configManager.setRSProfileConfiguration(TreeRunHelperConfig.CONFIG_GROUP, key, value);
 		}
 	}
 
@@ -443,7 +443,7 @@ public class TreeRunHelper extends Plugin
 			final long unixNow = Instant.now().getEpochSecond();
 
 			final String key = patch.configKey();
-			final String storedValue = configManager.getRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key);
+			final String storedValue = configManager.getRSProfileConfiguration(TreeRunHelperConfig.CONFIG_GROUP, key);
 			if (storedValue != null) {
 				String[] parts = storedValue.split(":");
 
@@ -525,10 +525,10 @@ public class TreeRunHelper extends Plugin
 	}
 
 	@Provides
-	ExampleConfig provideConfig(ConfigManager configManager)
+	TreeRunHelperConfig provideConfig(ConfigManager configManager)
 	{
 		this.configManager = configManager;
-		return configManager.getConfig(ExampleConfig.class);
+		return configManager.getConfig(TreeRunHelperConfig.class);
 	}
 }
 
