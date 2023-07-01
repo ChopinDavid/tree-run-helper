@@ -15,11 +15,8 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
-import java.lang.reflect.Array;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @PluginDescriptor(
@@ -45,8 +42,63 @@ public class TreeRunHelper extends Plugin
 	ArrayList<Patch> availableCelastrusTreePatches = new ArrayList();
 	ArrayList<Patch> availableRedwoodTreePatches = new ArrayList();
 
-	ArrayList<Patch> growingPatches = new ArrayList();
-	ArrayList<Patch> harvestablePatches = new ArrayList();
+	private ArrayList<Patch> allAvailablePatches() {
+		ArrayList<Patch> allAvailablePatches = new ArrayList();
+
+		for (Patch availableTreePatch: availableTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableFruitTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableSpiritTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableHardwoodTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableCalquatTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableCrystalTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableCelastrusTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+		for (Patch availableTreePatch: availableRedwoodTreePatches) {
+			allAvailablePatches.add(availableTreePatch);
+		}
+
+		return allAvailablePatches;
+	}
+
+	private Map<String, Long> growingPatchesMap = new HashMap();
+	private ArrayList<String> harvestablePatchKeys = new ArrayList();
+
+	private Map<Patch, Long> growingPatches() {
+		Map<Patch, Long> growingPatches = new HashMap();
+		for (Patch patch: allAvailablePatches()) {
+			for (String key : growingPatchesMap.keySet()) {
+				if (key == patch.configKey()) {
+					growingPatches.put(patch, growingPatchesMap.get(key));
+				}
+			}
+		}
+		return growingPatches();
+	}
+
+	private ArrayList<Patch> harvestablePatches() {
+		ArrayList<Patch> harvestablePatches = new ArrayList();
+		for (Patch patch: allAvailablePatches()) {
+			for (String harvestablePatchKey: harvestablePatchKeys) {
+				if (patch.configKey() == harvestablePatchKey) {
+					harvestablePatches.add(patch);
+				}
+			}
+		}
+		return harvestablePatches();
+	}
 
 	@Override
 	protected void startUp() throws Exception
@@ -400,17 +452,18 @@ public class TreeRunHelper extends Plugin
 					continue;
 				}
 				final Long harvestableUnixTime = Long.parseLong(parts[1]);
+				final String patchKey = patch.configKey();
 				if (unixNow < harvestableUnixTime) {
-					if (!growingPatches.contains(patch)) {
-						growingPatches.add(patch);
+					if (!growingPatchesMap.containsKey(patchKey)) {
+						growingPatchesMap.put(patchKey, harvestableUnixTime);
 					}
-					if (harvestablePatches.contains(patch)) {
+					if (harvestablePatchKeys.contains(patchKey)) {
 						//We might not need this conditional?
-						harvestablePatches.removeIf((harvestableEntry -> (harvestableEntry.configKey() == patch.configKey())));
+						harvestablePatchKeys.remove(patchKey);
 					}
 				} else {
-					if (!harvestablePatches.contains(patch)) {
-						harvestablePatches.add(patch);
+					if (!harvestablePatchKeys.contains(patchKey)) {
+						harvestablePatchKeys.add(patchKey);
 					}
 				}
 			}
