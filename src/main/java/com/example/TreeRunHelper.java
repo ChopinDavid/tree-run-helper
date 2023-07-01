@@ -15,6 +15,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,10 @@ public class TreeRunHelper extends Plugin
 	ArrayList<Patch> availableCrystalTreePatches = new ArrayList();
 	ArrayList<Patch> availableCelastrusTreePatches = new ArrayList();
 	ArrayList<Patch> availableRedwoodTreePatches = new ArrayList();
+
+	ArrayList<Patch> growingPatches = new ArrayList();
+	ArrayList<Patch> harvestablePatches = new ArrayList();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -88,25 +93,18 @@ public class TreeRunHelper extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick tick)
 	{
-			if (farmingLevel == null) {
-				farmingLevel = client.getRealSkillLevel(Skill.FARMING);
-				updateAvailablePatches();
-			}
+		if (farmingLevel == null) {
+			farmingLevel = client.getRealSkillLevel(Skill.FARMING);
+			updateAvailablePatches();
+		}
 
 		Widget motd = client.getWidget(WidgetInfo.LOGIN_CLICK_TO_PLAY_SCREEN_MESSAGE_OF_THE_DAY);
 		if (motd != null && !motd.isHidden())
 		{
 			return;
 		}
-			final int currentRegionId = client.getLocalPlayer().getWorldLocation().getRegionID();
-			determineNewPatchValues(PatchType.TREE, availableTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.FRUIT_TREE, availableFruitTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.SPIRIT_TREE, availableSpiritTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.HARDWOOD_TREE, availableHardwoodTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.CALQUAT_TREE, availableCalquatTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.CRYSTAL_TREE, availableCrystalTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.CELASTRUS_TREE, availableCelastrusTreePatches, currentRegionId);
-			determineNewPatchValues(PatchType.REDWOOD_TREE, availableRedwoodTreePatches, currentRegionId);
+		updatePatchValues();
+		updateGrowingAndHarvestablePatches();
 	}
 
 	private void updateAvailablePatches() {
@@ -327,7 +325,19 @@ public class TreeRunHelper extends Plugin
 		return 0;
 	}
 
-	private void determineNewPatchValues(PatchType type, List<Patch> patches, int currentRegionId) {
+	void updatePatchValues() {
+		final int currentRegionId = client.getLocalPlayer().getWorldLocation().getRegionID();
+		updatePatchValuesForPatchType(PatchType.TREE, availableTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.FRUIT_TREE, availableFruitTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.SPIRIT_TREE, availableSpiritTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.HARDWOOD_TREE, availableHardwoodTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.CALQUAT_TREE, availableCalquatTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.CRYSTAL_TREE, availableCrystalTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.CELASTRUS_TREE, availableCelastrusTreePatches, currentRegionId);
+		updatePatchValuesForPatchType(PatchType.REDWOOD_TREE, availableRedwoodTreePatches, currentRegionId);
+	}
+
+	private void updatePatchValuesForPatchType(PatchType type, List<Patch> patches, int currentRegionId) {
 		for (Patch patch: patches) {
 			if (patch.getRegionId() != currentRegionId) {
 				continue;
@@ -342,12 +352,14 @@ public class TreeRunHelper extends Plugin
 			if (storedValue != null) {
 				String[] parts = storedValue.split(":");
 				final String oldVarbit = parts[0];
-				if (!oldVarbit.equals(strVarbit) && varbitValue > 3 && Integer.parseInt(oldVarbit) == 3) {
-					//We just planted something!
-					value = strVarbit + ":" + (unixNow + timeToGrow);
-				} else if (varbitValue == 3) {
-					//We are ready to plant
-					value = strVarbit + ":" + (unixNow + timeToGrow);
+				if (!oldVarbit.equals(strVarbit)) {
+					if (varbitValue > 3 && Integer.parseInt(oldVarbit) == 3) {
+						//We just planted something!
+						value = strVarbit + ":" + (unixNow + timeToGrow);
+					} else {
+						//We are ready to plant
+						value = strVarbit + ":" + (unixNow + timeToGrow);
+					}
 				} else {
 					continue;
 				}
@@ -360,6 +372,48 @@ public class TreeRunHelper extends Plugin
 				}
 			}
 			configManager.setRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key, value);
+		}
+	}
+
+	private void updateGrowingAndHarvestablePatches() {
+		updateGrowingAndHarvestablePatchesFromPatchList(availableTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableFruitTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableSpiritTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableHardwoodTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableCalquatTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableCrystalTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableCelastrusTreePatches);
+		updateGrowingAndHarvestablePatchesFromPatchList(availableHardwoodTreePatches);
+	}
+
+	private void updateGrowingAndHarvestablePatchesFromPatchList(List<Patch> patchList) {
+		for (Patch patch: patchList) {
+			final long unixNow = Instant.now().getEpochSecond();
+
+			final String key = patch.configKey();
+			final String storedValue = configManager.getRSProfileConfiguration(ExampleConfig.CONFIG_GROUP, key);
+			if (storedValue != null) {
+				String[] parts = storedValue.split(":");
+
+				final int varBit = Integer.parseInt(parts[0]);
+				if (varBit <= 3) {
+					continue;
+				}
+				final Long harvestableUnixTime = Long.parseLong(parts[1]);
+				if (unixNow < harvestableUnixTime) {
+					if (!growingPatches.contains(patch)) {
+						growingPatches.add(patch);
+					}
+					if (harvestablePatches.contains(patch)) {
+						//We might not need this conditional?
+						harvestablePatches.removeIf((harvestableEntry -> (harvestableEntry.configKey() == patch.configKey())));
+					}
+				} else {
+					if (!harvestablePatches.contains(patch)) {
+						harvestablePatches.add(patch);
+					}
+				}
+			}
 		}
 	}
 
