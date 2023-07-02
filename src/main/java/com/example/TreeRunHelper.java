@@ -4,6 +4,8 @@ import com.google.inject.Provides;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+
+import com.sun.source.tree.Tree;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -14,7 +16,11 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.util.ImageUtil;
 
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,7 +29,7 @@ import java.util.List;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Tree Run Helper"
+		name = "Tree Run Helper"
 )
 public class TreeRunHelper extends Plugin
 {
@@ -48,9 +54,27 @@ public class TreeRunHelper extends Plugin
 	ArrayList<Patch> growingPatches = new ArrayList();
 	ArrayList<Patch> harvestablePatches = new ArrayList();
 
+	TreeRunHelperPanel treeRunHelperPanel;
+	private NavigationButton navButton;
+
+	@Inject
+	private ClientToolbar clientToolbar;
+
 	@Override
 	protected void startUp() throws Exception
 	{
+		treeRunHelperPanel = new TreeRunHelperPanel(this);
+
+
+		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/com/example/icon.png");
+
+		navButton = NavigationButton.builder()
+				.tooltip("Tree run helper")
+				.icon(icon)
+				.priority(6)
+				.panel(treeRunHelperPanel)
+				.build();
+		clientToolbar.addNavigation(navButton);
 	}
 
 	@Override
